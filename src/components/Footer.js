@@ -3,6 +3,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { FaSignInAlt, FaSignOutAlt, FaTachometerAlt } from "react-icons/fa";
+import { supabase } from "../supabaseClient";
 
 const Footer = () => {
   const { user, profile, logout, isAdmin } = useAuth();
@@ -35,7 +36,7 @@ const Footer = () => {
                 {profile?.full_name || user.email}
               </span>
               <button
-                onClick={handleLogout}
+                onClick={logout}
                 className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md font-semibold transition"
               >
                 <FaSignOutAlt />

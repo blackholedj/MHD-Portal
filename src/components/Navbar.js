@@ -93,7 +93,7 @@ const Navbar = () => {
               }
               onClick={closeMobileMenu}
             >
-              Kurzy
+              Tabulky
             </NavLink>
           </li>
         </>

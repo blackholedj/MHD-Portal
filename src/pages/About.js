@@ -42,12 +42,11 @@ const About = () => {
             informace, vzkazy a postřehy z provozu v reálném čase.
           </Feature>
           <Feature icon={<FaFileAlt size={24} />} title="Správa dokumentů">
-            Všechny důležité manuály, příručky, směrnice a jízdní řády bezpečně
+            Všechny důležité manuály, příručky, směrnice a tabulky bezpečně
             uložené a dostupné kdykoliv ke stažení.
           </Feature>
-          <Feature icon={<FaGraduationCap size={24} />} title="Kurzy a linky">
-            Fotografický přehled klíčových úseků a zastávek na jednotlivých
-            linkách. Ideální pro nové řidiče i pro osvěžení znalostí.
+          <Feature icon={<FaGraduationCap size={24} />} title="Tabulky">
+            Fotogalérie provozních tabulek pro řidiče MHD.
           </Feature>
           <Feature
             icon={<FaMapMarkedAlt size={24} />}

@@ -45,3 +45,164 @@ create table courses (
     morning_photo_path text,
     afternoon_photo_path text
 );
+
+
+
+
+------------------------------------
+
+-- Vytvoří funkci, která se spustí při vytvoření nového uživatele
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.profiles (id, email, full_name)
+  values (
+    new.id,
+    new.email,
+    -- Zkusí vzít celé jméno z metadat (např. z Google přihlášení)
+    new.raw_user_meta_data ->> 'full_name'
+  );
+  return new;
+end;
+$$;
+
+-- Vytvoří trigger, který zavolá funkci handle_new_user() po každém novém záznamu v auth.users
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+
+
+---------------------------------------
+
+-- Přidá do tabulky 'courses' nový sloupec 'day_type'
+ALTER TABLE public.courses
+ADD COLUMN day_type TEXT NOT NULL DEFAULT 'Pracovní dny';
+
+-- Přidá komentář pro lepší orientaci (volitelné)
+COMMENT ON COLUMN public.courses.day_type IS 'Typ dne, pro který kurz platí (např. Pracovní dny, Víkend, Sobota, Neděle a svátky)';
+
+-----------------------------------------
+
+-- Přidá do tabulky 'profiles' nový sloupec pro blokaci
+-- Je typu BOOLEAN (pravda/nepravda) a výchozí hodnota je 'false' (není zablokován)
+ALTER TABLE public.profiles
+ADD COLUMN is_blocked BOOLEAN DEFAULT false;
+
+-- (Volitelné) Můžeme také aktualizovat status pro lepší přehlednost
+-- ALTER TABLE public.profiles ADD COLUMN status TEXT DEFAULT 'pending';
+-- Pokud už status máte, můžete ho využít a nastavit na 'blocked'.
+-- Pro přehlednost je ale 'is_blocked' lepší.
+
+-----------------------------------------
+
+-- Funkce pro získání role uživatele z tabulky 'profiles'
+CREATE OR REPLACE FUNCTION get_user_role()
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Vrátí roli přihlášeného uživatele podle jeho ID
+  RETURN (SELECT role FROM public.profiles WHERE id = auth.uid());
+END;
+$$;
+
+------------------------------------------
+
+-- 1. Zapnout RLS pro tabulku profiles
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- 2. Administrátoři mohou s profily dělat cokoliv
+CREATE POLICY "Admins have full access on profiles"
+ON public.profiles FOR ALL
+USING (get_user_role() = 'admin')
+WITH CHECK (get_user_role() = 'admin');
+
+-- 3. Uživatelé mohou číst všechny profily
+CREATE POLICY "Users can view all profiles"
+ON public.profiles FOR SELECT
+USING (auth.role() = 'authenticated');
+
+-- 4. Uživatelé mohou upravovat pouze svůj vlastní profil
+CREATE POLICY "Users can update their own profile"
+ON public.profiles FOR UPDATE
+USING (auth.uid() = id)
+WITH CHECK (auth.uid() = id);
+
+------------------------------------------
+
+-- 1. Zapnout RLS pro tabulku messages
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+
+-- 2. Administrátoři mohou dělat cokoliv
+CREATE POLICY "Admins have full access on messages"
+ON public.messages FOR ALL
+USING (get_user_role() = 'admin')
+WITH CHECK (get_user_role() = 'admin');
+
+-- 3. Přihlášení uživatelé mohou číst všechny zprávy
+CREATE POLICY "Authenticated users can view messages"
+ON public.messages FOR SELECT
+USING (auth.role() = 'authenticated');
+
+-- 4. Přihlášení uživatelé mohou vkládat nové zprávy
+CREATE POLICY "Authenticated users can insert messages"
+ON public.messages FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+-- 5. Uživatelé mohou mazat pouze své vlastní zprávy
+CREATE POLICY "Users can delete their own messages"
+ON public.messages FOR DELETE
+USING (auth.uid() = user_id);
+
+-------------------------------------------
+
+-- === DOKUMENTY ===
+-- 1. Zapnout RLS
+ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
+
+-- 2. Pravidlo pro Adminy
+CREATE POLICY "Admins have full access on documents"
+ON public.documents FOR ALL
+USING (get_user_role() = 'admin')
+WITH CHECK (get_user_role() = 'admin');
+
+-- 3. Pravidlo pro Uživatele (pouze čtení)
+CREATE POLICY "Authenticated users can view documents"
+ON public.documents FOR SELECT
+USING (auth.role() = 'authenticated');
+
+
+-- === KURZY ===
+-- 1. Zapnout RLS
+ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
+
+-- 2. Pravidlo pro Adminy
+CREATE POLICY "Admins have full access on courses"
+ON public.courses FOR ALL
+USING (get_user_role() = 'admin')
+WITH CHECK (get_user_role() = 'admin');
+
+-- 3. Pravidlo pro Uživatele (pouze čtení)
+CREATE POLICY "Authenticated users can view courses"
+ON public.courses FOR SELECT
+USING (auth.role() = 'authenticated');
+
+-----------------------------------------------
+
+-- 1. Zapnout RLS
+ALTER TABLE public.contacts ENABLE ROW LEVEL SECURITY;
+
+-- 2. Administrátoři mohou číst a mazat zprávy
+CREATE POLICY "Admins can manage contacts"
+ON public.contacts FOR ALL
+USING (get_user_role() = 'admin')
+WITH CHECK (get_user_role() = 'admin');
+
+-- 3. Kdokoliv může vložit novou zprávu (kontaktovat)
+CREATE POLICY "Anyone can insert a contact message"
+ON public.contacts FOR INSERT
+WITH CHECK (true);

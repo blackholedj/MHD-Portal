@@ -8,6 +8,8 @@ import {
   FaTrash,
   FaBan,
   FaReply,
+  FaUndo,
+  FaUser,
 } from "react-icons/fa";
 
 // ======================================================================
@@ -127,25 +129,13 @@ const UserManagement = () => {
                 )}
               </td>
               <td className="px-6 py-4 text-sm font-medium">
-                <div className="flex items-center space-x-3">
-                  {user.status === "pending" && (
-                    <button
-                      onClick={() => updateUserStatus(user.id, "approved")}
-                      title="Schválit"
-                      className="text-green-600 hover:text-green-900"
-                    >
-                      <FaCheck size={18} />
-                    </button>
-                  )}
-                  {user.role === "user" && (
-                    <button
-                      onClick={() => updateUserRole(user.id, "admin")}
-                      title="Povýšit na admina"
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      <FaUserShield size={18} />
-                    </button>
-                  )}
+                <div>
+                  {/* --- ZMĚNY JSOU ZDE --- */}
+                  {user.status === 'pending' && <button onClick={() => updateUserStatus(user.id, 'approved')} title="Schválit" className="text-green-600 hover:text-green-900 m-1"><FaCheck size={18} /></button>}
+                  {user.status === 'approved' && <button onClick={() => updateUserStatus(user.id, 'pending')} title="Vrátit na neschváleného" className="text-gray-500 hover:text-gray-800 m-1"><FaUndo size={16} /></button>}
+                  
+                  {user.role === 'user' && <button onClick={() => updateUserRole(user.id, 'admin')} title="Povýšit na admina" className="text-blue-600 hover:text-blue-900 m-1"><FaUserShield size={18} /></button>}
+                  {user.role === 'admin' && <button onClick={() => updateUserRole(user.id, 'user')} title="Odebrat roli admina" className="text-purple-600 hover:text-purple-900 m-1"><FaUser size={16} /></button>}
                   <button
                     onClick={() => toggleBlockUser(user)}
                     title={user.is_blocked ? "Odblokovat" : "Zablokovat"}

@@ -172,7 +172,7 @@ const CourseForm = ({ course, onSave, onCancel }) => {
       <div className="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
-            {course ? "Upravit kurz" : "Přidat nový kurz"}
+            {course ? "Upravit tabulku" : "Přidat novou tabulku"}
           </h2>
           <button
             onClick={onCancel}
@@ -216,7 +216,7 @@ const CourseForm = ({ course, onSave, onCancel }) => {
           {/* Upload fotek */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                 <FaImage /> Ranní část
               </label>
               <input
@@ -226,7 +226,7 @@ const CourseForm = ({ course, onSave, onCancel }) => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                 <FaImage /> Odpolední část
               </label>
               <input
@@ -319,7 +319,7 @@ const Courses = () => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold">Kurzy / Linky</h1>
+        <h1 className="text-3xl font-bold">Tabulky</h1>
         {isAdmin && (
           <button
             onClick={() => {
@@ -328,7 +328,7 @@ const Courses = () => {
             }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200"
           >
-            <FaPlus /> Přidat kurz
+            <FaPlus /> Přidat Tabulku
           </button>
         )}
       </div>
